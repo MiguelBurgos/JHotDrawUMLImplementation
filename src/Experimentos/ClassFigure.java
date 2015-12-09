@@ -1,7 +1,11 @@
-package UML;
+package Experimentos;
 
 
 
+
+
+import UML.JModellerClass;
+import UML.SeparatorFigure;
 import javax.swing.*;
 import java.awt.*;
 import static java.awt.SystemColor.menu;
@@ -96,38 +100,38 @@ public class ClassFigure extends GraphicalCompositeFigure {
         popupMenu.add(new AbstractAction("Add Public Attribute") {
                 @Override
                 public void actionPerformed(ActionEvent event) {
-                    addAttribute(PUBLIC_INDICATOR_, DEFAULT_ATTRIBUTE_NAME_);
+                    addAttribute(PUBLIC_INDICATOR_, DEFAULT_ATTRIBUTE_NAME_, DEFAULT_ATTRIBUTE_TYPE_);
                 }
             });
         popupMenu.add(new AbstractAction("Add Private Attribute") {
                 @Override
                 public void actionPerformed(ActionEvent event) {
-                    addAttribute(PRIVATE_INDICATOR_, DEFAULT_ATTRIBUTE_NAME_);
+                    addAttribute(PRIVATE_INDICATOR_, DEFAULT_ATTRIBUTE_NAME_, DEFAULT_ATTRIBUTE_TYPE_);
                 }
             });
         popupMenu.add(new AbstractAction("Add Protected Attribute") {
                 @Override
                 public void actionPerformed(ActionEvent event) {
-                    addAttribute(PROTECTED_INDICATOR_, DEFAULT_ATTRIBUTE_NAME_);
+                    addAttribute(PROTECTED_INDICATOR_, DEFAULT_ATTRIBUTE_NAME_, DEFAULT_ATTRIBUTE_TYPE_);
                 }
             });
         popupMenu.addSeparator();
         popupMenu.add(new AbstractAction("Add Public Method") {
                 @Override
                 public void actionPerformed(ActionEvent event) {
-                    addMethod(PUBLIC_INDICATOR_, DEFAULT_METHOD_NAME_);
+                    addMethod("method() : void", PUBLIC_INDICATOR_);
                 }
             });
         popupMenu.add(new AbstractAction("Add Private Method") {
                 @Override
                 public void actionPerformed(ActionEvent event) {
-                    addMethod(PRIVATE_INDICATOR_, DEFAULT_METHOD_NAME_);
+                    addMethod("method() : void", PRIVATE_INDICATOR_);
                 }
             });
         popupMenu.add(new AbstractAction("Add Protected Method") {
                 @Override
                 public void actionPerformed(ActionEvent event) {
-                    addMethod(PROTECTED_INDICATOR_, DEFAULT_METHOD_NAME_);
+                    addMethod("method() : void", PROTECTED_INDICATOR_);
                 }
             });
         popupMenu.setLightWeightPopupEnabled(true);
@@ -164,7 +168,7 @@ public class ClassFigure extends GraphicalCompositeFigure {
         return myClassNameFigure;
     }
     
-    protected void addAttribute(String accessibility, String newAttribute) {
+    protected void addAttribute(String accessibility, String newAttribute, String type) {
         getModellerClass().addAttribute(newAttribute);
         TextFigure classFigureAttribute = new TextFigure() {
             @Override
@@ -172,8 +176,17 @@ public class ClassFigure extends GraphicalCompositeFigure {
                 if (!getText().equals(newString)) {
                     getModellerClass().renameAttribute(getText(), newString);
                 }
-                
-                super.setText(accessibility + newString.replace(accessibility, ""));
+               
+                if(!newString.equals("attribute")){
+                    newString = ClassFigure.formatElement(newString, accessibility);
+                    if(!newString.contains(accessibility)){
+                        super.setText(accessibility+ newString);
+                    }else{
+                        super.setText(newString);
+                    }
+                }else{
+                    super.setText(accessibility + newAttribute + TYPE_SEPARATOR_ + type);
+                }
                 updateAttributeFigure();
             }
         };
@@ -195,7 +208,7 @@ public class ClassFigure extends GraphicalCompositeFigure {
         update();
     }
     
-    protected void addMethod(String accesability, String newMethod) {
+    protected void addMethod(String newMethod, String accesability) {
         getModellerClass().addMethod(newMethod);
         TextFigure classFigureMethod = new TextFigure() {
             public void setText(String newString) {
@@ -275,11 +288,14 @@ public class ClassFigure extends GraphicalCompositeFigure {
     public void read(StorableInput dr) throws IOException {
         getClassNameFigure().setText(dr.readString());
         
-        String attributeAccesability = dr.readString().substring(0, 1);
-        String attributeName = dr.readString().replace(attributeAccesability, "");
+        String[] attribute = decompose(dr.readString());
+        System.out.println(attribute.length);
+        System.out.println(attribute[0] + "|" + attribute[1] + "|" + attribute[2]);
+//        String attributeAccesability = dr.readString().substring(0, 1);
+//        String attributeName = dr.readString().replace(attributeAccesability, "");
         int attributesCount = dr.readInt();
         for (int attributeIndex = 0; attributeIndex < attributesCount; attributeIndex++) {
-            addAttribute(attributeName, attributeAccesability);
+            addAttribute(attribute[0], attribute[1], attribute[2]);
         }
 
         String methodAccesability = dr.readString().substring(0, 1);
@@ -297,7 +313,7 @@ public class ClassFigure extends GraphicalCompositeFigure {
     public void write(StorableOutput dw) {
         dw.writeString(getModellerClass().getName());
         dw.writeInt(getModellerClass().getNumberOfAttributes());
-
+        System.out.println("Escribo");
         Iterator attributeIterator = getModellerClass().getAttributes();
         while (attributeIterator.hasNext()) {
             dw.writeString((String)attributeIterator.next());
@@ -311,6 +327,28 @@ public class ClassFigure extends GraphicalCompositeFigure {
         dw.writeStorable(getPresentationFigure());
     }
 
+    public String[] decompose(String newString){
+        String[] decomposeString = newString.replace(" : ", " ").split(" ");
+        return decomposeString;
+    }
+    
+    public static String formatElement (String element, String accessability){
+        String formatedElement = element;
+        if(!formatedElement.contains(TYPE_SEPARATOR_)){
+            if(formatedElement.contains(":")){
+                formatedElement = formatedElement.replace(":", TYPE_SEPARATOR_).replace("  ", " ");  
+            }
+            formatedElement = formatedElement.concat(TYPE_SEPARATOR_);
+        }
+        
+        if(!formatedElement.contains(accessability)){
+            if(formatedElement.contains(String.valueOf(accessability.charAt(0)))){
+                formatedElement = formatedElement.replace(String.valueOf(accessability.charAt(0)), accessability);  
+            }
+            formatedElement = accessability + formatedElement;
+        }
+        return formatedElement;
+    }
 
     private void readObject(ObjectInputStream s) throws ClassNotFoundException, IOException {
         // call superclass' private readObject() indirectly
@@ -326,5 +364,5 @@ public class ClassFigure extends GraphicalCompositeFigure {
     private final String DEFAULT_ATTRIBUTE_TYPE_ = "Object";
     private final String DEFAULT_METHOD_NAME_ = "method()";
     private final String DEFAULT_METHOD_TYPE_ = "void";
-    private final String TYPE_SEPARATOR_ = " : ";
+    private static final String TYPE_SEPARATOR_ = " : ";
 }
