@@ -43,15 +43,11 @@ local.properties
 ##########################
 ## NetBeans
 ##########################
-nbproject/
-build/
-nbbuild/
-dist/
-nbdist/
-nbactions.xml
-nb-configuration.xml
-*.mf
-build.*
+build
+dist
+nbproject
+build.xml
+manifest.mf
 ##########################
 ## OS X
 ##########################
