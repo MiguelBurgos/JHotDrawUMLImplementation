@@ -4,6 +4,9 @@ package UML;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -12,13 +15,14 @@ import org.jhotdraw.framework.*;
 import org.jhotdraw.standard.*;
 import org.jhotdraw.figures.*;
 import static org.jhotdraw.application.DrawApplication.IMAGES;
-import org.jhotdraw.contrib.MDI_DrawApplication;
 import org.jhotdraw.util.CommandMenu;
 
-public class NothingApp extends MDI_DrawApplication {
+public class NothingApp extends MDI_Customize {
 
-    public final String CLASS_IMAGES = "/images/";
-
+    private final String CLASS_IMAGES_ = "/images/";
+    private final String JAVA_DIRECTORY_ = System.getProperty("user.dir") + "\\JavaClasses";
+    //private final String JAVA_DIRECTORY_ = "src\\UML";
+    
     public NothingApp() {
         super("Nothing");
     }
@@ -30,16 +34,16 @@ public class NothingApp extends MDI_DrawApplication {
         palette.add(createToolButton(IMAGES + "TEXT", "Text Tool", tool));
 
         tool = new CreationTool(this, new ClassFigure());
-        palette.add(createToolButton(CLASS_IMAGES + "CLASS", "Class Diagram", tool));
+        palette.add(createToolButton(CLASS_IMAGES_ + "CLASS", "Class Diagram", tool));
 
         tool = new ConnectionTool(this, new AssociationLineConnection());
         palette.add(createToolButton(IMAGES + "LINE", "Composite Tool", tool));
 
         tool = new ConnectionTool(this, new DependencyLineConnection());
-        palette.add(createToolButton(CLASS_IMAGES + "DEPENDENCY", "Dependency Line Tool", tool));
+        palette.add(createToolButton(CLASS_IMAGES_ + "DEPENDENCY", "Dependency Line Tool", tool));
 
         tool = new ConnectionTool(this, new InheritanceLineConnection());
-        palette.add(createToolButton(CLASS_IMAGES + "INHERITANCE", "Inheritance connection tool", tool));
+        palette.add(createToolButton(CLASS_IMAGES_ + "INHERITANCE", "Inheritance connection tool", tool));
 
     }
 
@@ -76,6 +80,18 @@ public class NothingApp extends MDI_DrawApplication {
                     }
                 }, 5);
         menu.insertSeparator(6);
+        menu.insert(
+                new AbstractAction("Initialize Diagram from Java..") {
+                    public void actionPerformed(ActionEvent event) {
+                        try {
+                            Drawing view = createDrawing();
+                            newWindow(view);
+                            initializeDiagramFromJava(JAVA_DIRECTORY_, view);
+                        } catch (IOException ex) {
+                            Logger.getLogger(NothingApp.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                }, 7);
         return menu;
     }
 

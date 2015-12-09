@@ -45,7 +45,7 @@ public class ClassFigure extends GraphicalCompositeFigure {
     }
 
     protected void initialize() {
-       
+
         removeAll();
 
        
